@@ -1,6 +1,7 @@
 const app = require('./app')
 const config = require('./config/env')
 const { testConnection } = require('./config/db')
+const { initializeDatabase } = require('./config/initDB')
 
 async function startServer() {
   console.log(`Starting server in ${config.nodeEnv} mode...`)
@@ -9,6 +10,9 @@ async function startServer() {
   const dbOk = await testConnection()
   if (!dbOk) {
     console.warn('⚠️ Warning: Database connection failed. Server will start but some features may not work.')
+  } else {
+    // กำหนดตารางในฐานข้อมูลผ่าน Backend โดยตรง
+    await initializeDatabase()
   }
 
   const server = app.listen(config.port, () => {

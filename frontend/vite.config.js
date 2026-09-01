@@ -10,12 +10,12 @@ export default defineConfig({
     proxy: {
       // ส่งคำขอ /api/* ไปยัง backend
       '/api': {
-        target: 'http://backend:5001',
+        target: 'http://127.0.0.1:5001',
         changeOrigin: true,
       },
       // ส่งคำขอ /uploads/* ไปยัง backend
       '/uploads': {
-        target: 'http://backend:5001',
+        target: 'http://127.0.0.1:5001',
         changeOrigin: true,
       },
     },

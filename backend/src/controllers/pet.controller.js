@@ -144,10 +144,10 @@ exports.createPet = async (req, res, next) => {
     // 2. ถ้ามีการอัปโหลดไฟล์ ให้ Insert ลง pet_images
     if (req.files && req.files.length > 0) {
       const imageValues = req.files.map((file, index) => {
-        const imageUrl = file.filename ? `/uploads/${file.filename}` : file.path;
+        const base64Image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
         return [
           listingId,
-          imageUrl, // Local or Cloudinary URL
+          base64Image, // Base64 string
           index === 0 ? 1 : 0 // รุปแรกให้เป็นรูปหลัก (primary)
         ]
       })
@@ -207,10 +207,10 @@ exports.updatePet = async (req, res, next) => {
       const hasImages = existingImages[0].count > 0
 
       const imageValues = req.files.map((file, index) => {
-        const imageUrl = file.filename ? `/uploads/${file.filename}` : file.path;
+        const base64Image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
         return [
           id,
-          imageUrl, // Local or Cloudinary URL
+          base64Image, // Base64 string
           (!hasImages && index === 0) ? 1 : 0 // รุปแรกให้เป็นรูปหลัก ถ้ารูปเดิมไม่มีเลย
         ]
       })

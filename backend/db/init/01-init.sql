@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS users (
   full_name VARCHAR(255) NOT NULL,
   phone VARCHAR(20),
   role ENUM('poster', 'adopter', 'admin') DEFAULT 'adopter',
-  avatar_url VARCHAR(500),
+  avatar_url LONGTEXT,
   is_banned TINYINT(1) DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS pet_listings (
 CREATE TABLE IF NOT EXISTS pet_images (
   id INT AUTO_INCREMENT PRIMARY KEY,
   listing_id INT NOT NULL,
-  image_url VARCHAR(500) NOT NULL,
+  image_url LONGTEXT NOT NULL,
   is_primary TINYINT(1) DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (listing_id) REFERENCES pet_listings(id) ON DELETE CASCADE
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 -- =============================================================
 
 -- หมวดหมู่สัตว์เลี้ยงพื้นฐาน
-INSERT INTO pet_categories (name) VALUES 
+INSERT IGNORE INTO pet_categories (name) VALUES 
 ('สุนัข'),
 ('แมว'),
 ('กระต่าย'),
@@ -126,5 +126,5 @@ INSERT INTO pet_categories (name) VALUES
 
 -- บัญชี Admin เริ่มต้น 
 -- รหัสผ่านคือ: password123 (ถูกแฮชไว้)
-INSERT INTO users (email, password_hash, full_name, role) VALUES 
-('admin@pethome.com', '$2a$12$Ay7uihTOaQVtrMviuywEWOAN3ffFClOVKvXuv1.va46yY3gcKDNGS', 'System Admin', 'admin');
+INSERT IGNORE INTO users (email, password_hash, full_name, role) VALUES 
+('admin@pethome.com', '$2a$12$XYvuMPgBpgyWMiIvuMipBewZerY2EfambxoEJ2s9JnVWtgLRnxQ.m', 'System Admin', 'admin');

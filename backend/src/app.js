@@ -11,7 +11,12 @@ const app = express()
 app.use(helmet())
 
 // CORS
-app.use(cors())
+app.use(
+  cors({
+    origin: [require('./config/env').frontendUrl, 'http://localhost:5173'],
+    credentials: true,
+  })
+)
 
 // Parse JSON and urlencoded body
 app.use(express.json())
@@ -20,8 +25,6 @@ app.use(express.urlencoded({ extended: true }))
 // ─── Serve static files ──────────────────────────────────────────────────────
 // สำหรับเสิร์ฟไฟล์รูปภาพอัปโหลด
 app.use('/uploads', express.static('uploads'))
-// เสิร์ฟ frontend (สำหรับ production multi-stage)
-app.use(express.static('public'))
 
 // ─── API Routes ──────────────────────────────────────────────────────────────
 // Health check route
@@ -56,21 +59,6 @@ const notificationRoutes = require('./routes/notification.routes')
 app.use('/api/notifications', notificationRoutes)
 
 // ─── 404 & Error Handlers ────────────────────────────────────────────────────
-// Catch-all route สำหรับ Single Page Application (SPA) ให้ส่ง index.html
-app.get('*', (req, res, next) => {
-  // ยกเว้น API routes ถ้าไม่เจอให้เข้า 404 handler
-  if (req.originalUrl.startsWith('/api/')) {
-    return next()
-  }
-  // สำหรับ production, ถ้า req ไม่ใช่ API ให้ส่งกลับ index.html ของ frontend
-  const path = require('path')
-  res.sendFile(path.resolve(__dirname, '../public', 'index.html'), (err) => {
-    if (err) {
-      // ถ้าไม่ได้ build frontend (เช่น ตอน dev) ให้ next ไป
-      next()
-    }
-  })
-})
 
 // จับ API route ที่ไม่มีอยู่
 app.use('/api', notFound)

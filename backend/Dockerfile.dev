@@ -1,0 +1,18 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# ติดตั้ง nodemon แบบ global เพื่อใช้รัน dev
+RUN npm install -g nodemon
+
+# copy แค่ package.json มาก่อน เพื่อใช้แคชของ docker ในกรณีที่ dependencies ไม่เปลี่ยน
+COPY package*.json ./
+RUN npm install
+
+# copy โค้ดที่เหลือ
+COPY . .
+
+EXPOSE 5001
+
+# รัน backend ด้วย nodemon เพื่อให้ hot reload เวลามีการแก้ไขไฟล์
+CMD ["npm", "run", "dev"]

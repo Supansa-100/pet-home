@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pethome-prod:latest
+    container_name: pethome_app_prod
+    restart: always
+    ports:
+      - "80:5001" # แมปพอร์ต 80 เข้าไปที่แอป
+    environment:
+      - PORT=5001
+      - NODE_ENV=production
+      - DB_HOST=mysql_prod
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=${DB_PASSWORD:-secretprod}
+      - DB_NAME=pethome_db
+      - JWT_SECRET=${JWT_SECRET:-super_secret_production_key}
+      - JWT_EXPIRES_IN=7d
+      # ไม่ต้องใส่ VITE_API_URL เพราะแอปและ API อยู่ใน Origin เดียวกันแล้ว
+    depends_on:
+      - mysql_prod
+    networks:
+      - pethome-prod-network
+
+  mysql_prod:
+    image: mysql:8
+    container_name: pethome_mysql_prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secretprod}
+      MYSQL_DATABASE: pethome_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+      - ./db/init/:/docker-entrypoint-initdb.d/
+    networks:
+      - pethome-prod-network
+
+networks:
+  pethome-prod-network:
+    driver: bridge
+
+volumes:
+  mysql_prod_data:

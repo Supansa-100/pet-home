@@ -1,0 +1,65 @@
+# =============================================================
+# PET-HOME — Production Compose (Target B: VPS / Self-hosted)
+# เว็บและ API อยู่ใน container เดียวกัน เข้าใช้งานที่ http://<host>:5001
+# วิธีรัน: docker compose -f docker-compose.prod.yml up -d --build
+# =============================================================
+
+services:
+  db:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?ต้องกำหนด DB_ROOT_PASSWORD ใน .env}
+      MYSQL_DATABASE: ${DB_NAME:-pethome_db}
+      MYSQL_USER: ${DB_USER:?ต้องกำหนด DB_USER ใน .env}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?ต้องกำหนด DB_PASSWORD ใน .env}
+    volumes:
+      - mysql_data_prod:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - pethome-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pethome:latest
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - NODE_ENV=production
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${DB_NAME:-pethome_db}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_SSL=false
+      - JWT_SECRET=${JWT_SECRET:?ต้องกำหนด JWT_SECRET ใน .env}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5001}
+      # SMTP (ถ้าไม่กำหนด ระบบอีเมลจะทำงานแบบ mock เขียน log แทน)
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_SECURE=${SMTP_SECURE:-false}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - EMAIL_FROM=${EMAIL_FROM:-}
+    networks:
+      - pethome-network
+    depends_on:
+      db:
+        condition: service_healthy
+
+networks:
+  pethome-network:
+    driver: bridge
+
+volumes:
+  mysql_data_prod:

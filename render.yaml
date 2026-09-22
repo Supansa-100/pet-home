@@ -1,0 +1,36 @@
+# PET-HOME — Render Blueprint (deploy เฉพาะ backend)
+# frontend แยกไป Vercel และฐานข้อมูลใช้ TiDB Cloud
+services:
+  - type: web
+    name: pethome-api
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: node src/server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PORT
+        value: "4000"          # TiDB Cloud Serverless ใช้พอร์ต 4000
+      - key: DB_SSL
+        value: "true"          # TiDB Cloud บังคับเชื่อมต่อผ่าน TLS
+      - key: SEED_DEMO_DATA
+        value: "false"         # ไม่ใส่ข้อมูลจำลองลง production
+      - key: ALLOW_VERCEL_PREVIEWS
+        value: "false"         # เปิดเป็น true ถ้าต้องให้ preview URL ของ Vercel เรียก API ได้
+      # ค่าที่เหลือกรอกในหน้า Render Dashboard (เป็นความลับ ไม่ควรเก็บในไฟล์นี้)
+      - key: DB_HOST
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true    # ให้ Render สุ่มค่าให้เอง ปลอดภัยกว่าตั้งเอง
+      - key: FRONTEND_URL
+        sync: false            # URL ของ Vercel เช่น https://pethome.vercel.app

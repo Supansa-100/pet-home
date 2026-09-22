@@ -63,3 +63,6 @@ docker-compose.override.yml
 backend/uploads/*
 !backend/uploads/.gitkeep
 mysql_data/
+
+# Build output ที่ Express ใช้เสิร์ฟ (สร้างโดย Dockerfile)
+backend/public/

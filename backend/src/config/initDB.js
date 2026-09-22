@@ -13,8 +13,22 @@ async function initializeDatabase() {
       return
     }
 
+    // ไฟล์ที่ชื่อมีคำว่า seed คือข้อมูลจำลองสำหรับทดสอบ (สัตว์เลี้ยงปลอม, บัญชี password123)
+    // บน production ต้องไม่รันโดยอัตโนมัติ ไม่งั้นข้อมูลจริงจะปนกับข้อมูลปลอม
+    // ถ้าต้องการข้อมูลตัวอย่างสำหรับเดโม ให้ตั้ง SEED_DEMO_DATA=true
+    const isProduction = process.env.NODE_ENV === 'production'
+    const allowSeed = process.env.SEED_DEMO_DATA === 'true'
+    const skipSeedFiles = isProduction && !allowSeed
+
     const files = fs.readdirSync(initDir)
       .filter(file => file.endsWith('.sql'))
+      .filter(file => {
+        if (skipSeedFiles && file.includes('seed')) {
+          console.log(`⏭️  ข้าม ${file} (ข้อมูลจำลอง ไม่รันบน production)`)
+          return false
+        }
+        return true
+      })
       .sort() // เรียงลำดับไฟล์ตามชื่อ 01-..., 02-...
 
     if (files.length === 0) {

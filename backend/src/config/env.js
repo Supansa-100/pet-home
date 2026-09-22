@@ -1,12 +1,14 @@
+const path = require('path')
 require('dotenv').config()
+// โหลด .env จาก root directory เผื่อรันจาก backend/
+require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') })
 
 const requiredEnvVars = [
   'DB_HOST',
   'DB_NAME',
   'DB_USER',
   'DB_PASSWORD',
-  'JWT_SECRET',
-  'FRONTEND_URL'
+  'JWT_SECRET'
 ]
 
 // ตรวจสอบอย่างเคร่งครัดว่าตัวแปรที่จำเป็นต้องมี
@@ -30,5 +32,5 @@ module.exports = {
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   },
-  frontendUrl: process.env.FRONTEND_URL,
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
 }

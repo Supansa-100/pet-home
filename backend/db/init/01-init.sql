@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- 2. ตาราง pet_categories
 CREATE TABLE IF NOT EXISTS pet_categories (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
+  name VARCHAR(100) UNIQUE NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -126,5 +126,5 @@ INSERT IGNORE INTO pet_categories (name) VALUES
 
 -- บัญชี Admin เริ่มต้น 
 -- รหัสผ่านคือ: password123 (ถูกแฮชไว้)
-INSERT IGNORE INTO users (email, password_hash, full_name, role) VALUES 
-('admin@pethome.com', '$2a$12$XYvuMPgBpgyWMiIvuMipBewZerY2EfambxoEJ2s9JnVWtgLRnxQ.m', 'System Admin', 'admin');
+INSERT IGNORE INTO users (id, email, password_hash, full_name, role) VALUES 
+(1, 'admin@pethome.com', '$2a$12$XYvuMPgBpgyWMiIvuMipBewZerY2EfambxoEJ2s9JnVWtgLRnxQ.m', 'System Admin', 'admin');

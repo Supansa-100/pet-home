@@ -43,10 +43,10 @@ exports.getPets = async (req, res, next) => {
     }
     
     // ค่าเริ่มต้นแสดงเฉพาะ Available ถ้าไม่ได้ขอพิเศษ
-    if (status) {
+    if (status && status !== 'all') {
       query += ` AND p.status = ?`
       params.push(status)
-    } else {
+    } else if (!status) {
       query += ` AND p.status = 'available'`
     }
 
@@ -71,8 +71,8 @@ exports.getPets = async (req, res, next) => {
     }
     if (gender) { countQuery += ` AND p.gender = ?`; countParams.push(gender) }
     if (size) { countQuery += ` AND p.size = ?`; countParams.push(size) }
-    if (status) { countQuery += ` AND p.status = ?`; countParams.push(status) } 
-    else { countQuery += ` AND p.status = 'available'` }
+    if (status && status !== 'all') { countQuery += ` AND p.status = ?`; countParams.push(status) } 
+    else if (!status) { countQuery += ` AND p.status = 'available'` }
 
     const [[{ total }]] = await pool.query(countQuery, countParams)
 
@@ -299,6 +299,61 @@ exports.getMyPets = async (req, res, next) => {
     `, [req.user.id])
     
     res.json({ success: true, data: pets })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// 8. ส่งรายงานความไม่เหมาะสมของประกาศ
+exports.reportPet = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { reason, details } = req.body
+
+    const validReasons = ['spam', 'inappropriate', 'scam', 'abuse', 'duplicate', 'other']
+    if (!reason || !validReasons.includes(reason)) {
+      return res.status(400).json({ success: false, message: 'กรุณาระบุเหตุผลการรายงานที่ถูกต้อง' })
+    }
+
+    const [pets] = await pool.query('SELECT id, user_id, name FROM pet_listings WHERE id = ?', [id])
+    if (pets.length === 0) {
+      return res.status(404).json({ success: false, message: 'ไม่พบประกาศที่ต้องการรายงาน' })
+    }
+
+    // ป้องกันการรายงานประกาศของตัวเอง
+    if (pets[0].user_id === req.user.id) {
+      return res.status(400).json({ success: false, message: 'ไม่สามารถรายงานประกาศของตัวเองได้' })
+    }
+
+    // บันทึกรายงาน
+    await pool.query(
+      'INSERT INTO pet_reports (listing_id, reporter_id, reason, details) VALUES (?, ?, ?, ?)',
+      [id, req.user.id, reason, details || null]
+    )
+
+    // ตรวจสอบจำนวนรายงานสำหรับประกาศนี้ ถ้าครบ 3 ครั้ง ให้แจ้งเตือน Admin ทุกคน
+    const [reportCountResult] = await pool.query(
+      'SELECT COUNT(*) as count FROM pet_reports WHERE listing_id = ?',
+      [id]
+    )
+    const reportCount = reportCountResult[0].count
+
+    if (reportCount === 3) {
+      const [admins] = await pool.query('SELECT id FROM users WHERE role = "admin"')
+      for (const admin of admins) {
+        await pool.query(
+          'INSERT INTO notifications (user_id, type, reference_id, message) VALUES (?, ?, ?, ?)',
+          [
+            admin.id,
+            'admin_report_threshold',
+            id,
+            `ประกาศ "${pets[0].name}" มีรายงานความไม่เหมาะสมครบ 3 ครั้ง โปรดตรวจสอบความปลอดภัย`
+          ]
+        )
+      }
+    }
+
+    res.status(201).json({ success: true, message: 'ส่งรายงานความไม่เหมาะสมเรียบร้อยแล้ว' })
   } catch (error) {
     next(error)
   }

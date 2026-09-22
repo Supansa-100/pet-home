@@ -1,7 +1,15 @@
+const crypto = require('crypto')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { pool } = require('../config/db')
 const config = require('../config/env')
+const { sendPasswordResetEmail } = require('../services/email.service')
+
+// อายุของลิงก์รีเซ็ตรหัสผ่าน (นาที)
+const RESET_TOKEN_TTL_MINUTES = 60
+
+// เก็บเฉพาะค่า hash ของ token ลงฐานข้อมูล ไม่เก็บตัวจริง
+const hashResetToken = (token) => crypto.createHash('sha256').update(token).digest('hex')
 
 // สร้าง Token ย่อเพื่อให้เรียกใช้ได้ง่าย
 const generateToken = (id, role) => {
@@ -95,6 +103,96 @@ exports.login = async (req, res, next) => {
   }
 }
 
+// 2.1 ลืมรหัสผ่าน — ส่งลิงก์ตั้งรหัสผ่านใหม่ไปทางอีเมล
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมล' })
+    }
+
+    // ตอบข้อความเดียวกันเสมอ ไม่ว่าอีเมลจะมีในระบบหรือไม่
+    // เพื่อไม่ให้ผู้ไม่หวังดีใช้หน้านี้ไล่เดาว่าอีเมลไหนสมัครไว้แล้วบ้าง
+    const genericResponse = {
+      success: true,
+      message: 'หากอีเมลนี้มีอยู่ในระบบ เราได้ส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปให้แล้ว กรุณาตรวจสอบกล่องจดหมาย'
+    }
+
+    const [users] = await pool.query('SELECT id, email, full_name, is_banned FROM users WHERE email = ?', [email])
+    const user = users[0]
+
+    if (!user || user.is_banned) {
+      return res.json(genericResponse)
+    }
+
+    // ยกเลิก token เดิมที่ยังไม่ถูกใช้ เพื่อให้มีลิงก์ที่ใช้ได้เพียงอันล่าสุด
+    await pool.query(
+      'UPDATE password_resets SET used_at = NOW() WHERE user_id = ? AND used_at IS NULL',
+      [user.id]
+    )
+
+    const token = crypto.randomBytes(32).toString('hex')
+
+    await pool.query(
+      'INSERT INTO password_resets (user_id, token_hash, expires_at) VALUES (?, ?, NOW() + INTERVAL ? MINUTE)',
+      [user.id, hashResetToken(token), RESET_TOKEN_TTL_MINUTES]
+    )
+
+    await sendPasswordResetEmail({
+      toEmail: user.email,
+      toName: user.full_name,
+      token,
+      expiresInMinutes: RESET_TOKEN_TTL_MINUTES
+    })
+
+    res.json(genericResponse)
+  } catch (error) {
+    next(error)
+  }
+}
+
+// 2.2 ตั้งรหัสผ่านใหม่ด้วย token จากอีเมล
+exports.resetPassword = async (req, res, next) => {
+  try {
+    const { token, new_password } = req.body
+
+    if (!token || !new_password) {
+      return res.status(400).json({ success: false, message: 'ข้อมูลไม่ครบถ้วน' })
+    }
+
+    if (new_password.length < 8) {
+      return res.status(400).json({ success: false, message: 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร' })
+    }
+
+    const [rows] = await pool.query(
+      `SELECT id, user_id FROM password_resets
+       WHERE token_hash = ? AND used_at IS NULL AND expires_at > NOW()
+       LIMIT 1`,
+      [hashResetToken(token)]
+    )
+
+    if (rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'ลิงก์ไม่ถูกต้องหรือหมดอายุแล้ว กรุณาขอลิงก์ใหม่อีกครั้ง'
+      })
+    }
+
+    const resetRecord = rows[0]
+    const hashedPassword = await bcrypt.hash(new_password, 12)
+
+    await pool.query('UPDATE users SET password_hash = ? WHERE id = ?', [hashedPassword, resetRecord.user_id])
+
+    // ทำเครื่องหมายว่า token ถูกใช้แล้ว เพื่อไม่ให้นำลิงก์เดิมมาใช้ซ้ำ
+    await pool.query('UPDATE password_resets SET used_at = NOW() WHERE id = ?', [resetRecord.id])
+
+    res.json({ success: true, message: 'ตั้งรหัสผ่านใหม่สำเร็จ กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่' })
+  } catch (error) {
+    next(error)
+  }
+}
+
 // 3. ดูข้อมูลตัวเอง (Get Me)
 exports.getMe = async (req, res, next) => {
   try {
@@ -119,12 +217,37 @@ exports.updateProfile = async (req, res, next) => {
   try {
     const { full_name, phone, avatar_url } = req.body
 
-    await pool.query(
-      'UPDATE users SET full_name = COALESCE(?, full_name), phone = COALESCE(?, phone), avatar_url = COALESCE(?, avatar_url) WHERE id = ?',
-      [full_name, phone, avatar_url, req.user.id]
+    const updates = []
+    const values = []
+
+    if (full_name !== undefined) {
+      updates.push('full_name = ?')
+      values.push(full_name)
+    }
+    if (phone !== undefined) {
+      updates.push('phone = ?')
+      values.push(phone)
+    }
+    if (avatar_url !== undefined) {
+      updates.push('avatar_url = ?')
+      values.push(avatar_url || null)
+    }
+
+    if (updates.length > 0) {
+      values.push(req.user.id)
+      await pool.query(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, values)
+    }
+
+    const [updatedUsers] = await pool.query(
+      'SELECT id, email, full_name, phone, role, avatar_url, created_at FROM users WHERE id = ?',
+      [req.user.id]
     )
 
-    res.json({ success: true, message: 'อัปเดตข้อมูลสำเร็จ' })
+    res.json({
+      success: true,
+      message: 'อัปเดตข้อมูลสำเร็จ',
+      user: updatedUsers[0]
+    })
   } catch (error) {
     next(error)
   }

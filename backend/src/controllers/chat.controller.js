@@ -100,6 +100,33 @@ exports.sendMessage = async (req, res, next) => {
     // Update room's updated_at
     await pool.query('UPDATE chat_rooms SET updated_at = NOW() WHERE id = ?', [roomId])
 
+    // แจ้งเตือนผู้รับข้อความ (Debounce 15 นาที ป้องกันการสแปมแจ้งเตือนทุกข้อความ)
+    const recipientId = room.poster_id === userId ? room.adopter_id : room.poster_id
+    const [recentNotif] = await pool.query(`
+      SELECT id FROM notifications 
+      WHERE user_id = ? 
+        AND type = 'chat_message' 
+        AND reference_id = ? 
+        AND created_at >= NOW() - INTERVAL 15 MINUTE
+      LIMIT 1
+    `, [recipientId, roomId])
+
+    if (recentNotif.length === 0) {
+      const [senderUser] = await pool.query('SELECT full_name FROM users WHERE id = ?', [userId])
+      const [petData] = await pool.query('SELECT name FROM pet_listings WHERE id = ?', [room.listing_id])
+      const senderName = senderUser[0]?.full_name || 'คู่สนทนา'
+      const petName = petData[0]?.name || 'สัตว์เลี้ยง'
+
+      await pool.query(`
+        INSERT INTO notifications (user_id, type, reference_id, message)
+        VALUES (?, 'chat_message', ?, ?)
+      `, [
+        recipientId,
+        roomId,
+        `คุณมีข้อความใหม่จาก ${senderName} เกี่ยวกับ "${petName}"`
+      ])
+    }
+
     res.status(201).json({ success: true, data: newMessage[0] })
   } catch (error) {
     next(error)

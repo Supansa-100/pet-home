@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { Box, Typography, Button, IconButton } from '@mui/material'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import DeleteIcon from '@mui/icons-material/Delete'
+import { backendUrl } from '../../config/env'
 
 const ImageUploader = ({ images, setImages, existingImages = [], onRemoveExisting, maxImages = 5 }) => {
   const fileInputRef = useRef(null)
@@ -55,12 +56,6 @@ const ImageUploader = ({ images, setImages, existingImages = [], onRemoveExistin
   }
 
   const totalImages = images.length + existingImages.length;
-  const getImageUrl = (url) => {
-    if (!url) return '';
-    if (url.startsWith('http') || url.startsWith('data:')) return url;
-    const apiUrl = import.meta.env.VITE_API_URL || '';
-    return `${apiUrl.replace('/api/v1', '')}${url}`;
-  };
 
   return (
     <Box sx={{ width: '100%', mb: 3 }}>
@@ -127,7 +122,7 @@ const ImageUploader = ({ images, setImages, existingImages = [], onRemoveExistin
             >
               <Box
                 component="img"
-                src={getImageUrl(img.image_url)}
+                src={backendUrl(img.image_url)}
                 alt={`existing ${index}`}
                 sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />

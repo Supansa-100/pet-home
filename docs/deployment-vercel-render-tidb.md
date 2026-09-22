@@ -9,7 +9,7 @@
 | Frontend (เว็บ) | Vercel | เสิร์ฟไฟล์ static ที่ build จาก React |
 
 > **ต่างจากวิธีใน README อย่างไร:** README อธิบายแบบ *Single Container* (Express เสิร์ฟทั้งเว็บและ API
-> จากโดเมนเดียว) ส่วนคู่มือนี้แยกคนละโดเมน จึงต้องตั้งค่า **CORS** และ **VITE_API_URL** เพิ่ม
+> จากโดเมนเดียว) ส่วนคู่มือนี้แยกคนละโดเมน จึงต้องตั้งค่า **CORS** และ **VITE_BACKEND_URL** เพิ่ม
 > เลือกทำอย่างใดอย่างหนึ่ง ไม่ต้องทำทั้งสองแบบ
 
 ---
@@ -135,10 +135,13 @@
 
    | ตัวแปร | ค่า |
    | :--- | :--- |
-   | `VITE_API_URL` | `https://pethome-api.onrender.com/api` |
+   | `VITE_BACKEND_URL` | `https://pethome-api.onrender.com` |
 
-   > **ต้องมี `/api` ต่อท้าย** และต้อง**ไม่มี** `/` ปิดท้าย
-   > ถ้าใส่ผิด ทุก request จะยิงผิดที่และเว็บจะโหลดข้อมูลไม่ขึ้น
+   > ใส่**แค่ origin** ไม่ต้องมี `/api` ต่อท้าย เพราะโค้ดเติมให้เอง
+   > (ดูไฟล์ตั้งค่ากลาง [`frontend/src/config/env.js`](../frontend/src/config/env.js)
+   > และตัวอย่างค่าทั้งหมดที่ [`frontend/.env.example`](../frontend/.env.example))
+   >
+   > ถ้าเผลอใส่ `/api` หรือ `/` ปิดท้ายมาด้วย ระบบตัดทิ้งให้อัตโนมัติ
 
 4. กด Deploy แล้วจด URL ที่ได้ เช่น `https://pethome.vercel.app`
 
@@ -210,7 +213,7 @@ password: password123
 | อาการ | สาเหตุ | วิธีแก้ |
 | :--- | :--- | :--- |
 | Console ขึ้น `blocked by CORS policy` | ยังไม่ได้ทำขั้นที่ 4 หรือใส่ URL ผิด | ตั้ง `FRONTEND_URL` ให้ตรงกับ URL ของ Vercel เป๊ะๆ (ไม่ต้องมี `/` ปิดท้าย) |
-| เว็บขึ้นแต่ไม่มีข้อมูล / Network ยิงไป `vercel.app/api` | ลืมตั้ง `VITE_API_URL` หรือตั้งหลัง build ไปแล้ว | `VITE_API_URL` ถูกฝังตอน build ต้อง **Redeploy** ใหม่ทุกครั้งที่แก้ค่า |
+| เว็บขึ้นแต่ไม่มีข้อมูล / Network ยิงไป `vercel.app/api` | ลืมตั้ง `VITE_BACKEND_URL` หรือตั้งหลัง build ไปแล้ว | ค่านี้ถูกฝังตอน build ต้อง **Redeploy** ใหม่ทุกครั้งที่แก้ค่า |
 | Log ขึ้น `ECONNREFUSED` / `ETIMEDOUT` | ลืมตั้ง `DB_SSL=true` หรือใส่พอร์ตเป็น 3306 | ตั้ง `DB_SSL=true` และ `DB_PORT=4000` |
 | Log ขึ้น `Access denied for user` | user/password ผิด | TiDB user ต้องมีจุดและ `root` ต่อท้าย เช่น `2AbCd.root` ไม่ใช่แค่ `root` |
 | Render ขึ้น `Missing required environment variables` | กรอก env ไม่ครบ | ต้องมีครบ: `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET` |
@@ -239,5 +242,5 @@ SEED_DEMO_DATA=false
 
 **Vercel (frontend)**
 ```
-VITE_API_URL=https://pethome-api.onrender.com/api
+VITE_BACKEND_URL=https://pethome-api.onrender.com
 ```

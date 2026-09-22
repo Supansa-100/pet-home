@@ -4,7 +4,7 @@ const { testConnection, ensureDatabaseExists } = require('./config/db')
 const { initializeDatabase } = require('./config/initDB')
 const { initCronJobs } = require('./services/sla.service')
 
-// Start server
+// Start server (reloaded)
 async function startServer() {
   console.log(`Starting server in ${config.nodeEnv} mode...`)
 

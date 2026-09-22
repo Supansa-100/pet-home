@@ -1,18 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Container, Typography, Box, Grid, Paper, Button, Divider, Avatar, Stack, Chip, CircularProgress } from '@mui/material'
+import { Container, Typography, Box, Grid, Paper, Button, Divider, Avatar, Stack, Chip, CircularProgress, Alert } from '@mui/material'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import PetsIcon from '@mui/icons-material/Pets'
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
+import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined'
 
 import PetImageGallery from '../components/pet/PetImageGallery'
-import StatusChip from '../components/ui/StatusChip'
+import StatusChip, { isListingClosed } from '../components/ui/StatusChip'
 import RequestForm from '../components/request/RequestForm'
+import ReportModal from '../components/pet/ReportModal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import { getPetById, updatePetStatus, deletePet } from '../services/petService'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
+import BackButton from '../components/ui/BackButton'
+import { formatBangkokDate } from '../utils/dateUtils'
 
 const ListingDetailPage = () => {
   const { id } = useParams()
@@ -23,6 +27,7 @@ const ListingDetailPage = () => {
   const [pet, setPet] = useState(null)
   const [loading, setLoading] = useState(true)
   const [requestModalOpen, setRequestModalOpen] = useState(false)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
   const [confirmDialog, setConfirmDialog] = useState({ open: false, type: '', title: '', content: '' })
 
   useEffect(() => {
@@ -84,7 +89,8 @@ const ListingDetailPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6 }}>
+    <Container maxWidth="lg" sx={{ py: 5 }}>
+      <BackButton fallbackPath="/listings" label="กลับไปหน้ารวมประกาศ" />
       <Grid container spacing={4}>
         {/* Left Column: Images */}
         <Grid item xs={12} md={7}>
@@ -123,10 +129,19 @@ const ListingDetailPage = () => {
                 <Avatar src={pet.owner_avatar} sx={{ width: 56, height: 56 }} />
                 <Box>
                   <Typography variant="subtitle1" fontWeight={600}>{pet.owner_name}</Typography>
-                  <Typography variant="body2" color="text.secondary">ลงประกาศเมื่อ {new Date(pet.created_at).toLocaleDateString('th-TH')}</Typography>
+                  <Typography variant="body2" color="text.secondary">ลงประกาศเมื่อ {formatBangkokDate(pet.created_at)}</Typography>
                 </Box>
               </Box>
               
+              {/* แจ้งสถานะให้ชัดเจนทั้งฝั่งเจ้าของและผู้เข้าชม */}
+              {isListingClosed(pet.status) && (
+                <Alert severity={pet.status === 'adopted' ? 'success' : 'info'} sx={{ mb: 2 }}>
+                  {pet.status === 'adopted'
+                    ? `น้อง${pet.name} ได้รับบ้านใหม่แล้ว ประกาศนี้ปิดรับคำขออุปการะแล้ว`
+                    : 'ประกาศนี้ถูกปิดรับคำขออุปการะแล้ว'}
+                </Alert>
+              )}
+
               {isOwner ? (
                 <Stack spacing={2}>
                   <Button variant="contained" fullWidth onClick={() => navigate(`/listings/${pet.id}/requests`)}>
@@ -135,7 +150,8 @@ const ListingDetailPage = () => {
                   <Button variant="outlined" fullWidth onClick={() => navigate(`/listings/${pet.id}/edit`)}>
                     แก้ไขประกาศของฉัน
                   </Button>
-                  {pet.status !== 'closed' && (
+                  {/* ประกาศที่ได้บ้านแล้วถือว่าปิดรับไปแล้ว จึงไม่ต้องมีปุ่มปิดซ้ำ */}
+                  {!isListingClosed(pet.status) && (
                     <Button 
                       variant="outlined" 
                       color="warning" 
@@ -165,21 +181,43 @@ const ListingDetailPage = () => {
                   </Button>
                 </Stack>
               ) : (
-                <Button 
-                  variant="contained" 
-                  fullWidth 
-                  size="large" 
-                  disabled={pet.status !== 'available'}
-                  onClick={() => {
-                    if (!user) {
-                      navigate('/login')
-                    } else {
-                      setRequestModalOpen(true)
-                    }
-                  }}
-                >
-                  {pet.status === 'available' ? 'ขอรับอุปการะ' : 'ไม่สามารถขอรับอุปการะได้ในขณะนี้'}
-                </Button>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                  <Button 
+                    variant="contained" 
+                    fullWidth 
+                    size="large" 
+                    disabled={pet.status !== 'available'}
+                    onClick={() => {
+                      if (!user) {
+                        navigate('/login')
+                      } else {
+                        setRequestModalOpen(true)
+                      }
+                    }}
+                  >
+                    {pet.status === 'available'
+                      ? 'ขอรับอุปการะ'
+                      : pet.status === 'adopted'
+                        ? 'น้องได้บ้านใหม่แล้ว'
+                        : 'ไม่สามารถขอรับอุปการะได้ในขณะนี้'}
+                  </Button>
+                  <Button
+                    variant="text"
+                    color="inherit"
+                    size="small"
+                    startIcon={<FlagOutlinedIcon fontSize="small" />}
+                    sx={{ mt: 1.5, color: 'text.secondary', textTransform: 'none' }}
+                    onClick={() => {
+                      if (!user) {
+                        navigate('/login')
+                      } else {
+                        setReportModalOpen(true)
+                      }
+                    }}
+                  >
+                    รายงานความไม่เหมาะสม
+                  </Button>
+                </Box>
               )}
             </Paper>
 
@@ -224,6 +262,15 @@ const ListingDetailPage = () => {
           }} 
           petId={pet.id} 
           petName={pet.name} 
+        />
+      )}
+
+      {reportModalOpen && (
+        <ReportModal
+          open={reportModalOpen}
+          onClose={() => setReportModalOpen(false)}
+          petId={pet.id}
+          petName={pet.name}
         />
       )}
       

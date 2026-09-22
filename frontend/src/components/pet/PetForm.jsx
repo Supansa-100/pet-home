@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react'
 import { Box, TextField, Button, Grid, MenuItem, Typography, Paper, CircularProgress } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import ImageUploader from './ImageUploader'
-import { createPet, updatePet, getCategories } from '../../services/petService'
+import { createPet, updatePet, getCategories, getProvinces } from '../../services/petService'
 import { useToast } from '../../contexts/ToastContext'
 
 const PetForm = ({ initialData = null, isEdit = false }) => {
   const navigate = useNavigate()
   const showToast = useToast()
   const [categories, setCategories] = useState([])
+  const [provinces, setProvinces] = useState([])
   const [images, setImages] = useState([])
   const [existingImages, setExistingImages] = useState([])
   const [deletedImages, setDeletedImages] = useState([])
@@ -40,6 +41,18 @@ const PetForm = ({ initialData = null, isEdit = false }) => {
       }
     }
     fetchCategories()
+
+    const fetchProvinces = async () => {
+      try {
+        const res = await getProvinces()
+        if (res.success) {
+          setProvinces(res.data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch provinces:', err)
+      }
+    }
+    fetchProvinces()
 
     if (initialData) {
       setFormData({
@@ -137,7 +150,7 @@ const PetForm = ({ initialData = null, isEdit = false }) => {
               select
               label="ชนิดสัตว์เลี้ยง"
               name="category_id"
-              value={formData.category_id}
+              value={formData.category_id || ''}
               onChange={handleChange}
             >
               {categories.map((cat) => (
@@ -209,7 +222,7 @@ const PetForm = ({ initialData = null, isEdit = false }) => {
               select
               label="เพศ"
               name="gender"
-              value={formData.gender}
+              value={formData.gender || 'unknown'}
               onChange={handleChange}
             >
               <MenuItem value="male">ตัวผู้</MenuItem>
@@ -224,7 +237,7 @@ const PetForm = ({ initialData = null, isEdit = false }) => {
               select
               label="ขนาด"
               name="size"
-              value={formData.size}
+              value={formData.size || 'medium'}
               onChange={handleChange}
             >
               <MenuItem value="small">เล็ก</MenuItem>
@@ -235,13 +248,21 @@ const PetForm = ({ initialData = null, isEdit = false }) => {
 
           <Grid item xs={12}>
             <TextField
+              select
               fullWidth
               label="จังหวัด / พื้นที่"
               name="location"
               value={formData.location}
               onChange={handleChange}
-              placeholder="เช่น กรุงเทพฯ, เชียงใหม่"
-            />
+              helperText="เลือกจังหวัดเพื่อให้ผู้รับอุปการะค้นหาเจอได้ง่ายขึ้น"
+            >
+              <MenuItem value="">ไม่ระบุ</MenuItem>
+              {provinces.map((province) => (
+                <MenuItem key={province.id} value={province.name}>
+                  {province.name}
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
 
           <Grid item xs={12}>

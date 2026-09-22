@@ -5,6 +5,12 @@ export const getStats = async () => {
   return response.data
 }
 
+// ข้อมูลกราฟ: แนวโน้มย้อนหลัง 30 วัน และสัดส่วนชนิดสัตว์
+export const getCharts = async (days = 30) => {
+  const response = await api.get('/admin/charts', { params: { days } })
+  return response.data
+}
+
 export const getUsers = async () => {
   const response = await api.get('/admin/users')
   return response.data
@@ -32,5 +38,28 @@ export const updateCategory = async (id, name) => {
 
 export const deleteCategory = async (id) => {
   const response = await api.delete(`/categories/${id}`)
+  return response.data
+}
+
+// Reports
+export const getReports = async (status) => {
+  const params = status ? { status } : {}
+  const response = await api.get('/admin/reports', { params })
+  return response.data
+}
+
+export const updateReportStatus = async (id, data) => {
+  const response = await api.patch(`/admin/reports/${id}`, data)
+  return response.data
+}
+
+// SLA Alerts
+export const getSLAStatus = async () => {
+  const response = await api.get('/admin/sla/status')
+  return response.data
+}
+
+export const triggerSLACheck = async () => {
+  const response = await api.post('/admin/sla/trigger')
   return response.data
 }

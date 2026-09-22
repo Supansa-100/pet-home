@@ -1,5 +1,6 @@
-import { List, ListItem, ListItemAvatar, ListItemText, Avatar, Typography, Badge, Box } from '@mui/material'
+import { List, ListItem, ListItemButton, ListItemAvatar, ListItemText, Avatar, Typography, Badge, Box } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import { formatBangkokTime } from '../../utils/dateUtils'
 
 const ChatRoomList = ({ rooms, activeRoomId }) => {
   const navigate = useNavigate()
@@ -9,20 +10,21 @@ const ChatRoomList = ({ rooms, activeRoomId }) => {
       {rooms.map((room) => (
         <ListItem 
           key={room.id} 
-          button 
-          onClick={() => navigate(`/chat/${room.id}`)}
+          disablePadding
           sx={{
-            bgcolor: room.id === parseInt(activeRoomId) ? 'action.selected' : 'inherit',
             borderBottom: '1px solid',
             borderColor: 'divider',
-            '&:hover': { bgcolor: 'action.hover' }
           }}
         >
-          <ListItemAvatar>
-            <Badge color="error" badgeContent={room.unread_count || 0}>
-              <Avatar src={room.other_party_avatar} />
-            </Badge>
-          </ListItemAvatar>
+          <ListItemButton
+            selected={room.id === parseInt(activeRoomId)}
+            onClick={() => navigate(`/chat/${room.id}`)}
+          >
+            <ListItemAvatar>
+              <Badge color="error" badgeContent={room.unread_count || 0}>
+                <Avatar src={room.other_party_avatar} />
+              </Badge>
+            </ListItemAvatar>
           <ListItemText 
             primary={
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -31,7 +33,7 @@ const ChatRoomList = ({ rooms, activeRoomId }) => {
                 </Typography>
                 {room.last_message_time && (
                   <Typography variant="caption" color="text.secondary">
-                    {new Date(room.last_message_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}
+                    {formatBangkokTime(room.last_message_time)}
                   </Typography>
                 )}
               </Box>
@@ -42,7 +44,8 @@ const ChatRoomList = ({ rooms, activeRoomId }) => {
               </Typography>
             }
           />
-        </ListItem>
+        </ListItemButton>
+      </ListItem>
       ))}
       
       {rooms.length === 0 && (

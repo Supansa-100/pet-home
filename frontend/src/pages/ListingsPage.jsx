@@ -3,6 +3,7 @@ import { Container, Typography, Box, Pagination, Grid, FormControl, Select, Menu
 import PetGrid from '../components/pet/PetGrid'
 import PetFilterSidebar from '../components/pet/PetFilterSidebar'
 import EmptyState from '../components/ui/EmptyState'
+import BackButton from '../components/ui/BackButton'
 import { getPets } from '../services/petService'
 
 const ListingsPage = () => {
@@ -74,7 +75,8 @@ const ListingsPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6 }}>
+    <Container maxWidth="lg" sx={{ py: 5 }}>
+      <BackButton fallbackPath="/" label="กลับสู่หน้าหลัก" />
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
           หาบ้านให้สัตว์เลี้ยง
@@ -101,7 +103,7 @@ const ListingsPage = () => {
             <Typography variant="h6">สัตว์เลี้ยงที่รอคุณอยู่</Typography>
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <Select
-                value={filters.sort}
+                value={filters.sort || 'newest'}
                 onChange={(e) => setFilters(prev => ({ ...prev, sort: e.target.value }))}
               >
                 <MenuItem value="newest">ใหม่ล่าสุด</MenuItem>

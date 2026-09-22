@@ -5,6 +5,7 @@ import PetForm from '../components/pet/PetForm'
 import { getPetById } from '../services/petService'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
+import BackButton from '../components/ui/BackButton'
 
 const EditListingPage = () => {
   const { id } = useParams()
@@ -54,7 +55,8 @@ const EditListingPage = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 6 }}>
+    <Container maxWidth="md" sx={{ py: 5 }}>
+      <BackButton fallbackPath="/my-listings" label="ย้อนกลับ" />
       <PetForm isEdit={true} initialData={pet} />
     </Container>
   )

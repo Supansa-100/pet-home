@@ -56,8 +56,10 @@ const ImageUploader = ({ images, setImages, existingImages = [], onRemoveExistin
 
   const totalImages = images.length + existingImages.length;
   const getImageUrl = (url) => {
-    if (url.startsWith('http')) return url;
-    return `${import.meta.env.VITE_API_URL.replace('/api/v1', '')}${url}`;
+    if (!url) return '';
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    const apiUrl = import.meta.env.VITE_API_URL || '';
+    return `${apiUrl.replace('/api/v1', '')}${url}`;
   };
 
   return (

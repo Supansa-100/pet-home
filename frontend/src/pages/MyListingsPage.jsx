@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Container, Typography, Box, CircularProgress, Button } from '@mui/material'
+import { Container, Typography, Box, CircularProgress, Button, Stack } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import PetGrid from '../components/pet/PetGrid'
+import BackButton from '../components/ui/BackButton'
 import { getMyPets } from '../services/petService'
 
 const MyListingsPage = () => {
@@ -27,8 +28,9 @@ const MyListingsPage = () => {
   }, [])
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 5 }}>
+      <BackButton fallbackPath="/" label="กลับหน้าหลัก" />
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 4 }}>
         <Box>
           <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
             ประกาศของฉัน
@@ -37,9 +39,14 @@ const MyListingsPage = () => {
             จัดการรายการสัตว์เลี้ยงที่คุณลงประกาศหาบ้าน
           </Typography>
         </Box>
-        <Button variant="contained" onClick={() => navigate('/listings/create')}>
-          ลงประกาศใหม่
-        </Button>
+        <Stack direction="row" spacing={1.5}>
+          <Button variant="outlined" onClick={() => navigate('/incoming-requests')}>
+            ดูคำขออุปการะของฉัน
+          </Button>
+          <Button variant="contained" onClick={() => navigate('/listings/create')}>
+            ลงประกาศใหม่
+          </Button>
+        </Stack>
       </Box>
 
       {loading ? (

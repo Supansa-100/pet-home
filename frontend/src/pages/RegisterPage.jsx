@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Container, Box, Typography, TextField, Button, Alert, Paper, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
+import { Container, Box, Typography, TextField, Button, Alert, Paper } from '@mui/material'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import BackButton from '../components/ui/BackButton'
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -9,8 +10,7 @@ const RegisterPage = () => {
     password: '',
     confirmPassword: '',
     full_name: '',
-    phone: '',
-    role: 'adopter'
+    phone: ''
   })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -34,8 +34,7 @@ const RegisterPage = () => {
         email: formData.email,
         password: formData.password,
         full_name: formData.full_name,
-        phone: formData.phone,
-        role: formData.role
+        phone: formData.phone
       })
 
       if (response.data.success) {
@@ -49,8 +48,9 @@ const RegisterPage = () => {
 
   return (
     <Container maxWidth="sm">
-      <Box sx={{ mt: 8, mb: 8 }}>
-        <Paper sx={{ p: 4 }}>
+      <Box sx={{ mt: 5, mb: 8 }}>
+        <BackButton fallbackPath="/" label="กลับสู่หน้าหลัก" />
+        <Paper sx={{ p: 4, borderRadius: 2 }}>
           <Typography variant="h4" align="center" gutterBottom fontWeight="bold" color="primary">
             สมัครสมาชิก
           </Typography>
@@ -69,19 +69,9 @@ const RegisterPage = () => {
               fullWidth label="เบอร์โทรศัพท์ (ถ้ามี)" name="phone" margin="normal"
               value={formData.phone} onChange={handleChange}
             />
-            <FormControl fullWidth margin="normal">
-              <InputLabel id="role-label">วัตถุประสงค์ในการใช้งาน</InputLabel>
-              <Select
-                labelId="role-label"
-                name="role"
-                value={formData.role}
-                label="วัตถุประสงค์ในการใช้งาน"
-                onChange={handleChange}
-              >
-                <MenuItem value="adopter">ต้องการรับอุปการะสัตว์เลี้ยง</MenuItem>
-                <MenuItem value="poster">ต้องการลงประกาศหาบ้านให้สัตว์เลี้ยง</MenuItem>
-              </Select>
-            </FormControl>
+            <Alert severity="info" sx={{ mt: 2 }}>
+              บัญชีเดียวใช้ได้ทั้งลงประกาศหาบ้านให้สัตว์เลี้ยง และส่งคำขอรับอุปการะ
+            </Alert>
             <TextField
               fullWidth label="รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)" name="password" type="password" margin="normal" required
               value={formData.password} onChange={handleChange}

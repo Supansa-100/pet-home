@@ -1,6 +1,8 @@
-import { Card, CardContent, Typography, Box, Avatar, Stack, Button, Divider } from '@mui/material'
+import { Card, CardContent, Typography, Box, Avatar, Stack, Button, Divider, Chip } from '@mui/material'
 import RequestStatusBadge from './RequestStatusBadge'
+import StatusChip from '../ui/StatusChip'
 import { useNavigate } from 'react-router-dom'
+import { formatBangkokDate } from '../../utils/dateUtils'
 
 const RequestCard = ({ request, type = 'incoming', onApprove, onReject, onCancel }) => {
   const navigate = useNavigate()
@@ -11,13 +13,30 @@ const RequestCard = ({ request, type = 'incoming', onApprove, onReject, onCancel
         {type === 'incoming' ? (
           // View for the pet owner (incoming requests)
           <>
+            {request.pet_name && (
+              <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                <Chip
+                  avatar={request.pet_image ? <Avatar src={request.pet_image} /> : undefined}
+                  label={`ขอรับอุปการะ: ${request.pet_name}`}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                  sx={{ fontWeight: 600 }}
+                />
+                {request.adopter_phone && (
+                  <Typography variant="caption" color="text.secondary">
+                    เบอร์ติดต่อ: {request.adopter_phone}
+                  </Typography>
+                )}
+              </Box>
+            )}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Avatar src={request.adopter_avatar} sx={{ width: 48, height: 48 }} />
                 <Box>
                   <Typography variant="subtitle1" fontWeight={600}>{request.adopter_name}</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    ส่งคำขอเมื่อ: {new Date(request.created_at).toLocaleDateString('th-TH')}
+                    ส่งคำขอเมื่อ: {formatBangkokDate(request.created_at)}
                   </Typography>
                 </Box>
               </Box>
@@ -51,11 +70,15 @@ const RequestCard = ({ request, type = 'incoming', onApprove, onReject, onCancel
             <Box sx={{ flexGrow: 1 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    {request.pet_name}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 0.5 }}>
+                    <Typography variant="h6" fontWeight={600}>
+                      {request.pet_name}
+                    </Typography>
+                    {/* สถานะของสัตว์เลี้ยง เพื่อให้รู้ว่าน้องได้บ้านไปแล้วหรือยัง */}
+                    {request.pet_status && <StatusChip status={request.pet_status} />}
+                  </Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    ส่งคำขอเมื่อ: {new Date(request.created_at).toLocaleDateString('th-TH')}
+                    ส่งคำขอเมื่อ: {formatBangkokDate(request.created_at)}
                   </Typography>
                 </Box>
                 <RequestStatusBadge status={request.status} />

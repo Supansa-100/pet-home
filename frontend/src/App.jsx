@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import { Box, Container, Typography } from '@mui/material'
 
 import Navbar from './components/layout/Navbar'
+import BackButton from './components/ui/BackButton'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext'
 import { ToastProvider } from './contexts/ToastContext'
@@ -9,6 +10,8 @@ import { ToastProvider } from './contexts/ToastContext'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import ProfilePage from './pages/ProfilePage'
 
 // Phase 3 Pages
@@ -37,6 +40,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/listings" element={<ListingsPage />} />
             <Route path="/listings/:id" element={<ListingDetailPage />} />
             
@@ -47,6 +52,7 @@ function App() {
               <Route path="/listings/:id/edit" element={<EditListingPage />} />
               <Route path="/listings/:id/requests" element={<IncomingRequestsPage />} />
               <Route path="/my-listings" element={<MyListingsPage />} />
+              <Route path="/incoming-requests" element={<IncomingRequestsPage />} />
               <Route path="/my-requests" element={<MyRequestsPage />} />
               <Route path="/chat" element={<ChatListPage />} />
               <Route path="/chat/:roomId" element={<ChatRoomPage />} />
@@ -65,8 +71,11 @@ function App() {
 function NotFoundPage() {
   return (
     <Container maxWidth="sm" sx={{ py: 8, textAlign: 'center' }}>
-      <Typography variant="h3" color="error">404</Typography>
-      <Typography variant="h6">ไม่พบหน้าที่ต้องการ</Typography>
+      <Typography variant="h3" color="error" gutterBottom fontWeight="bold">404</Typography>
+      <Typography variant="h6" gutterBottom color="text.secondary">ไม่พบหน้าที่ต้องการ</Typography>
+      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+        <BackButton fallbackPath="/" label="กลับสู่หน้าหลัก" />
+      </Box>
     </Container>
   )
 }

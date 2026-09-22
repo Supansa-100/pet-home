@@ -6,13 +6,15 @@ import {
 import SearchIcon from '@mui/icons-material/Search'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import ClearIcon from '@mui/icons-material/Clear'
-import { getCategories } from '../../services/petService'
+import { getCategories, getProvinces } from '../../services/petService'
 
 const PetFilterSidebar = ({ filters, setFilters, onSearch }) => {
   const [categories, setCategories] = useState([])
+  const [provinces, setProvinces] = useState([])
 
   useEffect(() => {
     fetchCategories()
+    fetchProvinces()
   }, [])
 
   const fetchCategories = async () => {
@@ -23,6 +25,17 @@ const PetFilterSidebar = ({ filters, setFilters, onSearch }) => {
       }
     } catch (err) {
       console.error('Error fetching categories:', err)
+    }
+  }
+
+  const fetchProvinces = async () => {
+    try {
+      const res = await getProvinces()
+      if (res.success) {
+        setProvinces(res.data)
+      }
+    } catch (err) {
+      console.error('Error fetching provinces:', err)
     }
   }
 
@@ -37,10 +50,9 @@ const PetFilterSidebar = ({ filters, setFilters, onSearch }) => {
       category: '',
       gender: '',
       size: '',
-      location: ''
+      location: '',
+      sort: 'newest'
     })
-    // Note: We'll trigger search from parent when filters change,
-    // or we can call onSearch() here
   }
 
   const handleSubmit = (e) => {
@@ -65,7 +77,7 @@ const PetFilterSidebar = ({ filters, setFilters, onSearch }) => {
           size="small"
           label="ค้นหาชื่อ, รายละเอียด"
           name="keyword"
-          value={filters.keyword}
+          value={filters.keyword || ''}
           onChange={handleChange}
           InputProps={{
             startAdornment: (
@@ -83,7 +95,7 @@ const PetFilterSidebar = ({ filters, setFilters, onSearch }) => {
           size="small"
           label="ชนิดสัตว์เลี้ยง"
           name="category"
-          value={filters.category}
+          value={filters.category || ''}
           onChange={handleChange}
         >
           <MenuItem value=""><em>ทั้งหมด</em></MenuItem>
@@ -99,7 +111,7 @@ const PetFilterSidebar = ({ filters, setFilters, onSearch }) => {
           size="small"
           label="เพศ"
           name="gender"
-          value={filters.gender}
+          value={filters.gender || ''}
           onChange={handleChange}
         >
           <MenuItem value=""><em>ทั้งหมด</em></MenuItem>
@@ -115,7 +127,7 @@ const PetFilterSidebar = ({ filters, setFilters, onSearch }) => {
           size="small"
           label="ขนาด"
           name="size"
-          value={filters.size}
+          value={filters.size || ''}
           onChange={handleChange}
         >
           <MenuItem value=""><em>ทั้งหมด</em></MenuItem>
@@ -126,13 +138,21 @@ const PetFilterSidebar = ({ filters, setFilters, onSearch }) => {
 
         {/* Location */}
         <TextField
+          select
           fullWidth
           size="small"
           label="จังหวัด / พื้นที่"
           name="location"
-          value={filters.location}
+          value={filters.location || ''}
           onChange={handleChange}
-        />
+        >
+          <MenuItem value="">ทุกจังหวัด</MenuItem>
+          {provinces.map((province) => (
+            <MenuItem key={province.id} value={province.name}>
+              {province.name}
+            </MenuItem>
+          ))}
+        </TextField>
 
         <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
           <Button 

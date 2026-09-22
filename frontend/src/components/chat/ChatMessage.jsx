@@ -1,4 +1,5 @@
 import { Box, Typography } from '@mui/material'
+import { formatBangkokTime } from '../../utils/dateUtils'
 
 const ChatMessage = ({ message, isMe }) => {
   return (
@@ -33,7 +34,7 @@ const ChatMessage = ({ message, isMe }) => {
             color: isMe ? 'rgba(255,255,255,0.7)' : 'text.secondary'
           }}
         >
-          {new Date(message.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}
+          {formatBangkokTime(message.created_at)}
         </Typography>
       </Box>
     </Box>

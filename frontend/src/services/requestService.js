@@ -15,6 +15,11 @@ export const getIncomingRequests = async (petId) => {
   return response.data
 }
 
+export const getAllIncomingRequests = async () => {
+  const response = await api.get('/requests/incoming')
+  return response.data
+}
+
 export const approveRequest = async (requestId) => {
   const response = await api.patch(`/requests/${requestId}/approve`)
   return response.data

@@ -1,8 +1,14 @@
 import axios from 'axios'
 
+// ปลายทางของ API
+// - รันบนเครื่อง / Docker container เดียว: ไม่ต้องตั้งค่า ใช้ '/api' บนโดเมนเดียวกัน
+// - แยก deploy (เช่น frontend บน Vercel, backend บน Render):
+//   ตั้ง VITE_API_URL = https://<backend-domain>/api ตอน build
+const baseURL = import.meta.env.VITE_API_URL || '/api'
+
 // สร้าง axios instance
 const api = axios.create({
-  baseURL: '/api',
+  baseURL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container, Typography, Box, CircularProgress, Grid, Paper, Avatar, IconButton } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import BackButton from '../components/ui/BackButton'
 
 import ChatRoomList from '../components/chat/ChatRoomList'
 import ChatMessage from '../components/chat/ChatMessage'
@@ -95,16 +96,13 @@ const ChatRoomPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6, height: 'calc(100vh - 64px)' }}>
-      <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
-        <IconButton onClick={() => navigate('/chat')}>
-          <ArrowBackIcon />
-        </IconButton>
+    <Container maxWidth="lg" sx={{ py: 4, height: 'calc(100vh - 64px)' }}>
+      <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <BackButton fallbackPath="/chat" label="กลับไปหน้ารวมแชท" sx={{ mb: 0 }} />
+        <Typography variant="h5" component="h1" fontWeight={700} sx={{ display: { xs: 'none', md: 'block' } }}>
+          กล่องข้อความ
+        </Typography>
       </Box>
-
-      <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ display: { xs: 'none', md: 'block' } }}>
-        กล่องข้อความ
-      </Typography>
       
       <Grid container spacing={2} sx={{ height: 'calc(100% - 60px)' }}>
         {/* Left Column: Room List (hidden on mobile) */}

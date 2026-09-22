@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Container, Typography, Box, CircularProgress } from '@mui/material'
 import RequestCard from '../components/request/RequestCard'
+import BackButton from '../components/ui/BackButton'
 import { getMyRequests, cancelRequest } from '../services/requestService'
 
 const MyRequestsPage = () => {
@@ -39,7 +40,8 @@ const MyRequestsPage = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 6 }}>
+    <Container maxWidth="md" sx={{ py: 5 }}>
+      <BackButton fallbackPath="/" label="กลับหน้าหลัก" />
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
           คำขอรับอุปการะของฉัน

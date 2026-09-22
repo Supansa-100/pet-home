@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Container, Typography, Box, CircularProgress, Grid, Paper } from '@mui/material'
 import ChatRoomList from '../components/chat/ChatRoomList'
+import BackButton from '../components/ui/BackButton'
 import { getMyRooms } from '../services/chatService'
 
 const ChatListPage = () => {
@@ -25,7 +26,8 @@ const ChatListPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6, height: 'calc(100vh - 64px)' }}>
+    <Container maxWidth="lg" sx={{ py: 4, height: 'calc(100vh - 64px)' }}>
+      <BackButton fallbackPath="/" label="กลับหน้าหลัก" sx={{ mb: 1.5 }} />
       <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
         กล่องข้อความ
       </Typography>

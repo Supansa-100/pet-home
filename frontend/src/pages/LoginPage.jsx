@@ -3,6 +3,7 @@ import { Container, Box, Typography, TextField, Button, Alert, Paper } from '@mu
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../services/api'
+import BackButton from '../components/ui/BackButton'
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '' })
@@ -30,8 +31,9 @@ const LoginPage = () => {
 
   return (
     <Container maxWidth="sm">
-      <Box sx={{ mt: 8 }}>
-        <Paper sx={{ p: 4 }}>
+      <Box sx={{ mt: 5, mb: 6 }}>
+        <BackButton fallbackPath="/" label="กลับสู่หน้าหลัก" />
+        <Paper sx={{ p: 4, borderRadius: 2 }}>
           <Typography variant="h4" align="center" gutterBottom fontWeight="bold" color="primary">
             เข้าสู่ระบบ
           </Typography>
@@ -60,6 +62,9 @@ const LoginPage = () => {
             <Button type="submit" fullWidth variant="contained" color="primary" sx={{ mt: 3, mb: 2, py: 1.5 }}>
               เข้าสู่ระบบ
             </Button>
+            <Typography align="center" sx={{ mb: 1 }}>
+              <Link to="/forgot-password" style={{ color: '#FF6B35' }}>ลืมรหัสผ่าน?</Link>
+            </Typography>
             <Typography align="center">
               ยังไม่มีบัญชีใช่หรือไม่? <Link to="/register" style={{ color: '#FF6B35' }}>สมัครสมาชิก</Link>
             </Typography>

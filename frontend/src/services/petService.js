@@ -47,3 +47,15 @@ export const getCategories = async () => {
   const response = await api.get('/categories')
   return response.data
 }
+
+// Master data — รายชื่อจังหวัดสำหรับ Dropdown เลือกพื้นที่
+export const getProvinces = async () => {
+  const response = await api.get('/master/provinces')
+  return response.data
+}
+
+// Reports
+export const reportPet = async (id, data) => {
+  const response = await api.post(`/pets/${id}/report`, data)
+  return response.data
+}
